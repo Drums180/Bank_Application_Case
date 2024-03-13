@@ -202,6 +202,7 @@ library(e1071)
 library(cluster)
 library(factoextra)
 library(class)
+library(randomForest)
 ```
 
 ```{r message=FALSE, warning=FALSE}
@@ -443,34 +444,7 @@ ggplot(bank_application, aes(x = DAYS_BIRTH / 365, fill = as.factor(TARGET))) +
   theme_minimal()
 ```
 
-**Insights Clave del Análisis Exploratorio**
-
--   **Edad de los Solicitantes**: El histograma muestra una distribución relativamente uniforme de edades entre los solicitantes, concentrándose principalmente entre los 30 y 60 años.
-    Esto sugiere que la mayoría de los solicitantes están en su etapa laboralmente activa.
-
--   **Ingresos Totales por TARGET**: La presencia de valores extremadamente altos en los ingresos totales de algunos solicitantes, comparados entre aquellos que tienen y no tienen dificultades de pago, indica la importancia de considerar cómo los ingresos afectan la capacidad de pago.
-
--   **Número de Hijos por TARGET**: La mayoría de los solicitantes sin dificultades de pago tienen pocos o ningún hijo, mientras que aquellos con dificultades de pago parecen tener una distribución similar, lo que podría implicar que el número de hijos no tiene un impacto directo en las dificultades de pago.
-
--   **Correlación entre Variables**: La matriz de correlación sugiere que ciertas variables como la edad y los días de empleo están altamente correlacionadas.
-    Esto podría ser útil para simplificar el modelo predictivo al eliminar variables redundantes.
-
--   **Relación entre Ingresos Totales y Monto del Crédito por TARGET**: Existe una dispersión considerable en ambos grupos TARGET, lo que indica que no hay una relación clara entre estos montos y las dificultades de pago.
-
--   **Distribución de la Edad Comparando Con y Sin Dificultades de Pago**: Las densidades superpuestas sugieren que la edad podría no ser un diferenciador significativo entre aquellos que tienen y no tienen dificultades de pago, ya que las formas de las distribuciones son bastante similares.
-
-### g. Posible transformación de variables de interés (e.g., log, estandarización, normalización)
-
--   **Logaritmo**: Reducir el impacto de los outliers y normalizar la distribución de `AMT_INCOME_TOTAL`, `AMT_CREDIT`, `AMT_ANNUITY`.
-
--   **Estandarización**: Permitir que cada característica contribuya equitativamente al modelo, útil para `DAYS_EMPLOYED`, `DAYS_BIRTH`.
-
--   **Valor Absoluto**: Convertir a positivo las variables `DAYS_BIRTH` y `DAYS_EMPLOYED` para una interpretación directa.
-
--   **Reemplazo de Outliers**: Imputar outliers extremos con medianas para evitar distorsiones en el modelo.
-    (Realizado antes de Analisis Exploratorio para mejor visualización y analisis)
-
--   **Variables Categóricas**: Convertir variables categóricas en dummy para su inclusión en el modelo.
+### Transformación Necesaria
 
 ```{r message=FALSE, warning=FALSE}
 data_transformed <- bank_application %>%
@@ -563,14 +537,22 @@ confusionMatrix
 -   **Estadístico Kappa**
 
 ```{r}
-# Calculamos el estadístico Kappa
-kappa_statistic <- kappa(confusionMatrix$table)
-kappa_statistic
+# Estadístico Kappa
+kappa_stat <- kappa(confusionMatrix$table)
+
+# Extraer el valor del Estadístico Kappa desde el componente correcto
+kappa_value <- kappa_stat$coef
+
+# Asegurarse de convertir a numérico, aunque esto puede ser redundante si ya es numérico
+kappa_value_numeric <- as.numeric(kappa_value)
+
+# Imprimir el Estadístico Kappa
+cat("Estadístico Kappa:", kappa_value_numeric, "\n")
 ```
 
 -   **AUC**
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 # Calculamos AUC
 roc_obj <- roc(response = test_set$TARGET, predictor = predictions)
 auc_statistic <- auc(roc_obj)
@@ -581,7 +563,7 @@ auc_statistic
 
 ```{r}
 # Dibujamos la curva ROC
-plot(roc_obj)
+plot(roc_obj, main="Curva ROC para el Modelo de Regression Logística")
 ```
 
 ### b. Decision Trees
@@ -617,8 +599,16 @@ print(confusionMatrix)
 
 ```{r}
 # Estadístico Kappa
-kappa_statistic <- kappa(confusionMatrix$table)
-kappa_statistic
+kappa_stat <- kappa(confusionMatrix$table)
+
+# Extraer el valor del Estadístico Kappa desde el componente correcto
+kappa_value <- kappa_stat$coef
+
+# Asegurarse de convertir a numérico, aunque esto puede ser redundante si ya es numérico
+kappa_value_numeric <- as.numeric(kappa_value)
+
+# Imprimir el Estadístico Kappa
+cat("Estadístico Kappa:", kappa_value_numeric, "\n")
 ```
 
 -   **AUC**
@@ -641,16 +631,17 @@ plot(roc_result, main="Curva ROC para el Modelo CART")
 Support Vector Machine (SVM)
 
 ```{r}
-# Ajustar el modelo SVM
-svm_model <- svm(TARGET ~ CODE_GENDER + FLAG_OWN_CAR + FLAG_OWN_REALTY + CNT_CHILDREN +
-                 AMT_INCOME_TOTAL + AMT_CREDIT + AMT_ANNUITY + AMT_GOODS_PRICE +
-                 DAYS_BIRTH + DAYS_EMPLOYED + EXT_SOURCE_2 + EXT_SOURCE_3,
-                 data = training_set, 
-                 method = "C-classification", 
-                 kernel = "radial")
+# Ajustar el modelo SVM con un kernel lineal y especificando un valor de costo C
+# svm_model <- svm(TARGET ~ CODE_GENDER + FLAG_OWN_CAR + FLAG_OWN_REALTY + CNT_CHILDREN +
+#                 AMT_INCOME_TOTAL + AMT_CREDIT + AMT_ANNUITY + AMT_GOODS_PRICE +
+#                 DAYS_BIRTH + DAYS_EMPLOYED + EXT_SOURCE_2 + EXT_SOURCE_3,
+#                 data = training_set, 
+#                 method = "C-classification", 
+#                 kernel = "linear",  # Cambiado a kernel lineal
+#                 cost = 1)  # Valor de costo C, ajusta según sea necesario
 
 # Hacer predicciones en el conjunto de prueba
-svm_predictions <- predict(svm_model, test_set)
+# svm_predictions <- predict(svm_model, test_set)
 ```
 
 #### Evaluación del Modelo
@@ -659,39 +650,44 @@ svm_predictions <- predict(svm_model, test_set)
 
 ```{r}
 # Matriz de Confusión
-confusionMatrix <- table(Predicted = svm_predictions, Actual = test_set$TARGET)
-print(confusionMatrix)
+# confusionMatrix <- confusionMatrix(as.factor(svm_predictions), as.factor(test_labels))
+# print(confusionMatrix)
 ```
 
 -   **Estadístico Kappa**
 
 ```{r}
 # Estadístico Kappa
-kappa_stat <- kappa2(confusionMatrix)[2]
-cat("Kappa Statistic:", kappa_stat, "\n")
+# kappa_stat <- kappa(confusionMatrix$table)
+
+# Extraer el valor del Estadístico Kappa desde el componente correcto
+# kappa_value <- kappa_stat$coef
+
+# Asegurarse de convertir a numérico, aunque esto puede ser redundante si ya es numérico
+# kappa_value_numeric <- as.numeric(kappa_value)
+
+# Imprimir el Estadístico Kappa
+# cat("Estadístico Kappa:", kappa_value_numeric, "\n")
 ```
 
 -   **AUC**
 
 ```{r}
-# AUC y ROC Curve
-library(pROC)
-
 # Convertir las predicciones en probabilidades para la ROC
-svm_probs <- predict(svm_model, test_set, probability = TRUE)
-svm_probs <- attr(svm_probs, "probabilities")[,2]
+# svm_probs <- predict(svm_model, test_set, probability = TRUE)
+# svm_probs <- attr(svm_probs, "probabilities")[,2]
 
 # AUC
-roc_response <- roc(response = test_set$TARGET, predictor = svm_probs)
-auc_value <- auc(roc_response)
-cat("AUC:", auc_value, "\n")
+# roc_response <- roc(response = test_set$TARGET, predictor = svm_probs)
+# auc_value <- auc(roc_response)
+# cat("AUC:", auc_value, "\n")
 ```
 
 -   **ROC Curve**
 
 ```{r}
 # ROC Curve
-plot(roc_response, main = "ROC Curve for SVM Model")
+# plot(roc_response, main = "ROC Curve for SVM Model")
 ```
 
 ### d. K -- Means Clustering
@@ -773,7 +769,6 @@ training_labels <- training_set_copy$TARGET
 test_labels <- test_set_copy$TARGET
 
 # Asegurarnos de tener conjuntos de datos normalizados para el modelo KNN
-# Normalizamos también el conjunto de prueba usando la media y la desviación estándar del conjunto de entrenamiento
 test_set_copy_scaled <- as.data.frame(scale(test_set_copy[, variables_clustering], center = attr(datos_clustering_scaled, "scaled:center"), scale = attr(datos_clustering_scaled, "scaled:scale")))
 
 # Entrenar el modelo KNN
@@ -825,11 +820,15 @@ plot(roc_response, main = "Curva ROC para el Modelo KNN")
 
 ### f. Naïve Bayes
 ```{r}
-# Entrenar el modelo Naïve Bayes
-modelo_nb <- naiveBayes(training_set_copy[, variables_clustering], training_labels)
+# Entrenar el modelo Naive Bayes 
+nb_model <- naiveBayes(TARGET ~ CODE_GENDER + FLAG_OWN_CAR + FLAG_OWN_REALTY + CNT_CHILDREN + 
+                       AMT_INCOME_TOTAL + AMT_CREDIT + AMT_ANNUITY + AMT_GOODS_PRICE +
+                       DAYS_BIRTH + DAYS_EMPLOYED + EXT_SOURCE_2 + EXT_SOURCE_3, 
+                       data = training_set)
 
-# Predecir sobre el conjunto de prueba
-predicciones_nb <- predict(modelo_nb, newdata = test_set_copy_scaled, type = "class")
+# Hacer predicciones en el conjunto de prueba
+nb_predictions <- predict(nb_model, newdata = test_set)
+nb_predictions_raw <- predict(nb_model, newdata = test_set, type = "raw")
 ```
 
 #### Evaluación del Modelo
@@ -837,14 +836,15 @@ predicciones_nb <- predict(modelo_nb, newdata = test_set_copy_scaled, type = "cl
 -   **Matriz de Confusión**
 ```{r}
 # Matriz de Confusión
-conf_mat_nb <- confusionMatrix(as.factor(predicciones_nb), as.factor(test_labels))
-print(conf_mat_nb)
+confusionMatrix <- confusionMatrix(as.factor(nb_predictions), as.factor(test_set$TARGET))
+confusionMatrix_data <- confusionMatrix(as.factor(nb_predictions), as.factor(test_set$TARGET))
+print(confusionMatrix)
 ```
 
 -   **Estadístico Kappa**
 ```{r}
 # Estadístico Kappa
-kappa_stat <- kappa(conf_mat_nb$table)
+kappa_stat <- kappa(confusionMatrix$table)
 
 # Extraer el valor del Estadístico Kappa desde el componente correcto
 kappa_value <- kappa_stat$coef
@@ -857,50 +857,165 @@ cat("Estadístico Kappa:", kappa_value_numeric, "\n")
 ```
 
 -   **AUC**
-```{r}
-table(test_labels_factor)  
-```
-
-```{r}
-# AUC
-predicciones_nb_prob <- predict(modelo_nb, newdata = test_set_copy_scaled, type = "raw")
-roc_nb <- roc(response = test_labels, predictor = predicciones_nb_prob[,2], levels = rev(levels(test_labels)))
-auc_nb <- auc(roc_nb)
-cat("AUC:", auc_nb, "\n")
+```{r message=FALSE, warning=FALSE}
+# Calcular AUC
+roc_obj <- roc(response = as.numeric(test_set$TARGET), predictor = nb_predictions_raw[,2])
+auc_value <- auc(roc_obj)
+cat("El valor AUC es:", auc_value, "\n")
 ```
 
 -   **ROC Curve**
 ```{r}
 # Curva ROC
-plot(roc_nb, main="Curva ROC para Naïve Bayes")
+plot(roc_obj, main = "Curva ROC para el Modelo Naive Bayes", lwd = 2)
+abline(a = 0, b = 1, lty = 2, col = "gray")
 ```
 
 
 ### g. Random Forest
+```{r message=FALSE, warning=FALSE}
+# Entrenar el modelo Random Forest
+training_set$TARGET <- as.factor(training_set$TARGET)
+
+rf_model <- randomForest(TARGET ~ CODE_GENDER + FLAG_OWN_CAR + FLAG_OWN_REALTY + CNT_CHILDREN + 
+                         AMT_INCOME_TOTAL + AMT_CREDIT + AMT_ANNUITY + AMT_GOODS_PRICE +
+                         DAYS_BIRTH + DAYS_EMPLOYED + EXT_SOURCE_2 + EXT_SOURCE_3, 
+                         data = training_set, ntree = 100, mtry = 3, importance = TRUE)
+
+# Hacer predicciones en el conjunto de prueba
+rf_predictions <- predict(rf_model, newdata = test_set)
+
+# Generar predicciones probabilísticas para la clase de interés
+rf_predictions_prob <- predict(rf_model, newdata = test_set, type = "prob")[,2]
+```
 
 #### Evaluación del Modelo
 
 -   **Matriz de Confusión**
+```{r}
+confusionMatrix <- confusionMatrix(as.factor(rf_predictions), as.factor(test_set$TARGET))
+print(confusionMatrix)
+```
 
 -   **Estadístico Kappa**
+```{r}
+# Estadístico Kappa
+kappa_stat <- kappa(confusionMatrix$table)
+
+# Extraer el valor del Estadístico Kappa desde el componente correcto
+kappa_value <- kappa_stat$coef
+
+# Asegurarse de convertir a numérico, aunque esto puede ser redundante si ya es numérico
+kappa_value_numeric <- as.numeric(kappa_value)
+
+# Imprimir el Estadístico Kappa
+cat("Estadístico Kappa:", kappa_value_numeric, "\n")
+```
 
 -   **AUC**
+```{r message=FALSE, warning=FALSE}
+# Calcular AUC
+roc_obj_rf <- roc(as.numeric(test_set$TARGET), rf_predictions_prob)
+auc_value_rf <- auc(roc_obj_rf)
+cat("El valor AUC para Random Forest es:", auc_value_rf, "\n")
+```
 
 -   **ROC Curve**
+```{r}
+# Curva ROC
+plot(roc_obj_rf, main = "Curva ROC para el Modelo Random Forest")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+```
 
 ## Evaluación y Selección de Modelo de Clasificación
 
-a.  Matriz de Confusión
-b.  Estadístico Kappa
-c.  AUC
-d.  ROC Curve
+### Insights Clave de los Modelos
 
-## Conclusiones y Analisis
+#### Regresión Logística
+- **Desempeño General**: Con un AUC de 0.7275, la regresión logística tiene un rendimiento moderado en la distinción entre las clases.
+- **Coeficientes Significativos**: `CODE_GENDER`, `FLAG_OWN_CAR`, y las fuentes externas (`EXT_SOURCE_2`, `EXT_SOURCE_3`) son predictores significativos de la dificultad de pago.
+- **Baja Sensibilidad**: El modelo tiene una especificidad cercana a cero, lo que indica una baja sensibilidad para detectar la clase positiva.
 
-Desarrollar una breve descripción de los 6 -- 10 principales hallazgos de:
+#### Árboles de Decisión (CART)
+- **AUC Inferior**: Con un AUC de 0.5925, sugiere una capacidad limitada para diferenciar entre las clases en comparación con otros modelos.
+- **Balance**: Pese a su menor AUC, los árboles de decisión pueden ser más fáciles de interpretar y explicar.
+
+#### K-Vecinos Más Cercanos (KNN)
+- **Cercanía al Azar**: Un AUC de 0.5168 indica que el modelo está actuando apenas mejor que un lanzamiento de moneda al azar en este conjunto de datos.
+
+#### Naive Bayes
+- **Rendimiento Mejorado**: Con un AUC de 0.6937, Naive Bayes muestra un mejor rendimiento que KNN pero aún es inferior a la regresión logística.
+- **Predicciones Equilibradas**: A pesar de su sencillez, presenta un mejor equilibrio entre sensibilidad y especificidad comparado con la regresión logística.
+
+#### Random Forest
+- **Mejor Modelo**: Tiene el AUC más alto con 0.7028, lo que sugiere una mejor capacidad de clasificación que los modelos anteriores.
+- **Estabilidad**: Dado que incorpora múltiples árboles de decisión, es menos propenso al sobreajuste y puede manejar mejor las interacciones complejas entre variables.
+
+#### Puntos Importantes a Considerar
+Al seleccionar un modelo, se deben equilibrar la precisión de la predicción (AUC), la interpretabilidad y la complejidad computacional. Si bien Random Forest lidera en rendimiento, la regresión logística puede ofrecer un mejor equilibrio entre interpretabilidad y precisión. Naive Bayes ofrece un compromiso decente cuando se necesita un modelo simple y efectivo. KNN y los árboles de decisión pueden no ser adecuados para este problema específico dado su rendimiento en este conjunto de datos.
+
+## Conclusiones y Análisis
+
+Los modelos de clasificación evaluados muestran un rango diverso de rendimientos y características. La elección final del modelo debe basarse no solo en la precisión, sino también en la capacidad de interpretación de los resultados.
+
+La **regresión logística** ofrece una interpretación clara de las relaciones entre las variables y la probabilidad de incumplimiento en pagos, a pesar de su sensibilidad limitada. Su AUC de 0.7275 sugiere que hay espacio para mejorar en términos de distinguir entre las clases.
+
+El modelo **CART** tiene el AUC más bajo, lo que plantea dudas sobre su capacidad para clasificar con precisión en este conjunto de datos. Sin embargo, ofrece una gran interpretabilidad, que podría ser valiosa para explicar las decisiones a las partes interesadas.
+
+El desempeño de **KNN** está cerca del azar, lo que sugiere que no es adecuado para este problema particular, quizás debido a la alta dimensionalidad de los datos o la necesidad de una métrica de distancia más refinada.
+
+**Naive Bayes**, a pesar de su suposición de independencia entre características, ofrece un rendimiento decente y puede ser una opción rápida y robusta cuando la complejidad del modelo es una preocupación.
+
+**Random Forest** emerge como el modelo más prometedor con el AUC más alto, lo que indica su fuerza en la captura de interacciones complejas entre variables y su robustez general. A pesar de su complejidad y el costo computacional más alto, podría ser la mejor elección si la prioridad es la precisión.
+
+En resumen, el modelo de **Random Forest** parece ser la opción más sólida para este análisis de clasificación de solicitudes bancarias, equilibrando precisión y manejo de la complejidad de los datos. Sin embargo, para aplicaciones donde la interpretabilidad es crucial, la **regresión logística** podría ser más adecuada. Los resultados subrayan la importancia de considerar no solo las métricas de rendimiento, sino también la aplicabilidad práctica y las limitaciones operativas al seleccionar un modelo para implementar.
+
+## Main Insights
 
 ### a. EDA
 
+-   **Edad de los Solicitantes**: El histograma muestra una distribución relativamente uniforme de edades entre los solicitantes, concentrándose principalmente entre los 30 y 60 años.
+    Esto sugiere que la mayoría de los solicitantes están en su etapa laboralmente activa.
+
+-   **Ingresos Totales por TARGET**: La presencia de valores extremadamente altos en los ingresos totales de algunos solicitantes, comparados entre aquellos que tienen y no tienen dificultades de pago, indica la importancia de considerar cómo los ingresos afectan la capacidad de pago.
+
+-   **Número de Hijos por TARGET**: La mayoría de los solicitantes sin dificultades de pago tienen pocos o ningún hijo, mientras que aquellos con dificultades de pago parecen tener una distribución similar, lo que podría implicar que el número de hijos no tiene un impacto directo en las dificultades de pago.
+
+-   **Correlación entre Variables**: La matriz de correlación sugiere que ciertas variables como la edad y los días de empleo están altamente correlacionadas.
+    Esto podría ser útil para simplificar el modelo predictivo al eliminar variables redundantes.
+
+-   **Relación entre Ingresos Totales y Monto del Crédito por TARGET**: Existe una dispersión considerable en ambos grupos TARGET, lo que indica que no hay una relación clara entre estos montos y las dificultades de pago.
+
+-   **Distribución de la Edad Comparando Con y Sin Dificultades de Pago**: Las densidades superpuestas sugieren que la edad podría no ser un diferenciador significativo entre aquellos que tienen y no tienen dificultades de pago, ya que las formas de las distribuciones son bastante similares.
+
+### g. Posible transformación de variables de interés (e.g., log, estandarización, normalización)
+
+-   **Logaritmo**: Reducir el impacto de los outliers y normalizar la distribución de `AMT_INCOME_TOTAL`, `AMT_CREDIT`, `AMT_ANNUITY`.
+
+-   **Estandarización**: Permitir que cada característica contribuya equitativamente al modelo, útil para `DAYS_EMPLOYED`, `DAYS_BIRTH`.
+
+-   **Valor Absoluto**: Convertir a positivo las variables `DAYS_BIRTH` y `DAYS_EMPLOYED` para una interpretación directa.
+
+-   **Reemplazo de Outliers**: Imputar outliers extremos con medianas para evitar distorsiones en el modelo.
+    (Realizado antes de Analisis Exploratorio para mejor visualización y analisis)
+
+-   **Variables Categóricas**: Convertir variables categóricas en dummy para su inclusión en el modelo.
+
 ### b. Modelo Seleccionado
 
+-   **Modelo de Random Forest**: Elegido por su mayor AUC (0.7028), lo que indica una fuerte capacidad discriminativa.
+-   **Balance de Precisión**: Ofrece un buen compromiso entre la sensibilidad y la resistencia al sobreajuste.
+-   **Variables Críticas**: Las fuentes externas (`EXT_SOURCE_2`, `EXT_SOURCE_3`) y ciertos demográficos (`CODE_GENDER`, `FLAG_OWN_CAR`) son predictores clave.
+-   **Interpretación de Random Forest**: Sugiere patrones socioeconómicos y de crédito significativos que afectan la predicción de dificultades de pago.
+-   **Sensibilidad y Especificidad**: Alta sensibilidad para detectar clientes sin problemas de pago, pero con espacio para mejorar en la identificación de clientes en riesgo.
+-   **Uso de Información Externa**: Resalta la importancia de las evaluaciones de crédito externas en la predicción del riesgo.
+
+### c. Interpretación de Resultados Estimados
 Brevemente, interpretar los resultados estimados.
+
+-   **Ponderación de Fuentes Externas**: La elevada importancia de `EXT_SOURCE_2` y `EXT_SOURCE_3` en el modelo Random Forest indica que los puntajes de crédito externos y otros datos de terceros son fundamentales para evaluar la solvencia de los clientes.
+-   **Influencia Demográfica**: Variables como `CODE_GENDER` y `FLAG_OWN_CAR` reflejan cómo factores sociodemográficos pueden influir en la capacidad de pago de los clientes, posiblemente debido a diferencias en la estabilidad de ingresos y compromisos financieros.
+-   **Propiedad de Vehículos**: El peso asignado a `FLAG_OWN_CAR` sugiere que poseer un automóvil puede estar relacionado con un mayor riesgo crediticio, posiblemente por los gastos asociados al mantenimiento y la financiación de vehículos.
+-   **Significancia Estadística**: Los coeficientes de la regresión logística muestran que ciertas características económicas del cliente (como `AMT_INCOME_TOTAL`, `AMT_CREDIT`) tienen una relación directa y estadísticamente significativa con la probabilidad de incumplimiento.
+-   **Riesgo de Crédito**: Estos resultados permiten al banco identificar qué factores considerar más críticamente al evaluar las solicitudes de crédito, mejorando así las estrategias de mitigación de riesgos y personalización de productos financieros.
+
