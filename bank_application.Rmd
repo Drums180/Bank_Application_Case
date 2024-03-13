@@ -2,166 +2,192 @@
 title: "Bank_Application"
 author: "David Dominguez - A01570975"
 date: "2024-03-10"
-output: html_document
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    code_download: TRUE
+    theme: cosmo
+editor_options: 
+  markdown: 
+    wrap: sentence
 ---
 
 # Bank Application Classification Models
 
 ## Instrucciones
-A partir de la asignación durante la sesión de clase de las siguientes bases de datos i) bank_application_data o ii) bank_marketing_data, realizar las instrucciones 1 – 6. En el
-desarrollo del archivo de R-Markdown, por favor incluir data storytelling de los resultados del
-análisis exploratorio de los datos (EDA) así como la interpretación de los resultados estimados.
+
+A partir de la asignación durante la sesión de clase de las siguientes bases de datos i) bank_application_data o ii) bank_marketing_data, realizar las instrucciones 1 -- 6.
+En el desarrollo del archivo de R-Markdown, por favor incluir data storytelling de los resultados del análisis exploratorio de los datos (EDA) así como la interpretación de los resultados estimados.
 
 ## Lectura Sugeridas:
-- What is Classification in Machine Learning and Why Is It Important?
-https://emeritus.org/blog/artificial-intelligence-and-machine-learning-classification-in-machine-
-learning/
-- 5 Classification Algorithms for Machine Learning
-https://builtin.com/data-science/supervised-machine-learning-classification
-- What is K-Means Algorithm and How it Works?
-https://towardsmachinelearning.org/k-means/
+
+-   What is Classification in Machine Learning and Why Is It Important? <https://emeritus.org/blog/artificial-intelligence-and-machine-learning-classification-in-machine-> learning/
+-   5 Classification Algorithms for Machine Learning <https://builtin.com/data-science/supervised-machine-learning-classification>
+-   What is K-Means Algorithm and How it Works? <https://towardsmachinelearning.org/k-means/>
 
 ## Glosario
-- **SK_ID_CURR**: Identificador del préstamo en nuestra muestra.
-- **TARGET**: Variable objetivo (1 - cliente con dificultades de pago: tuvo un pago tardío más de X días en al menos una de las primeras Y cuotas del préstamo en nuestra muestra, 0 - todos los demás casos).
-- **NAME_CONTRACT_TYPE**: Identificación si el préstamo es en efectivo o revolving.
-- **CODE_GENDER**: Género del cliente.
-- **FLAG_OWN_CAR**: Indicador si el cliente posee un coche.
-- **FLAG_OWN_REALTY**: Indicador si el cliente posee una casa o piso.
-- **CNT_CHILDREN**: Número de hijos que tiene el cliente.
-- **AMT_INCOME_TOTAL**: Ingresos del cliente.
-- **AMT_CREDIT**: Monto del crédito del préstamo.
-- **AMT_ANNUITY**: Anualidad del préstamo.
-- **AMT_GOODS_PRICE**: Para los préstamos al consumo, es el precio de los bienes por los que se concedió el préstamo.
-- **NAME_TYPE_SUITE**: Quién acompañaba al cliente cuando solicitaba el préstamo.
-- **NAME_INCOME_TYPE**: Tipo de ingresos del cliente (empresario, trabajando, baja por maternidad,…).
-- **NAME_EDUCATION_TYPE**: Nivel de educación más alto alcanzado por el cliente.
-- **NAME_FAMILY_STATUS**: Estado familiar del cliente.
-- **NAME_HOUSING_TYPE**: Cuál es la situación de vivienda del cliente (alquilando, viviendo con los padres, ...).
-- **REGION_POPULATION_RELATIVE**: Población normalizada de la región donde vive el cliente (un número más alto significa que el cliente vive en una región más poblada).
-- **DAYS_BIRTH**: Edad del cliente en días en el momento de la solicitud.
-- **DAYS_EMPLOYED**: Cuántos días antes de la solicitud comenzó el empleo actual la persona.
-- **DAYS_REGISTRATION**: Cuántos días antes de la solicitud cambió el cliente su registro.
-- **DAYS_ID_PUBLISH**: Cuántos días antes de la solicitud cambió el cliente el documento de identidad con el que solicitó el préstamo.
-- **OWN_CAR_AGE**: Edad del coche del cliente.
-- **FLAG_MOBIL**: Indicador si el cliente proporcionó teléfono móvil (1=SI, 0=NO).
-- **FLAG_EMP_PHONE**: Indicador si el cliente proporcionó teléfono del trabajo (1=SI, 0=NO).
-- **FLAG_WORK_PHONE**: Indicador si el cliente proporcionó teléfono fijo (1=SI, 0=NO).
-- **FLAG_CONT_MOBILE**: Indicador si el teléfono móvil era alcanzable (1=SI, 0=NO).
-- **FLAG_PHONE**: Indicador si el cliente proporcionó teléfono fijo (1=SI, 0=NO).
-- **FLAG_EMAIL**: Indicador si el cliente proporcionó correo electrónico (1=SI, 0=NO).
-- **OCCUPATION_TYPE**: Qué tipo de ocupación tiene el cliente.
-- **CNT_FAM_MEMBERS**: Cuántos miembros de la familia tiene el cliente.
-- **REGION_RATING_CLIENT**: Nuestra calificación de la región donde vive el cliente (1,2,3).
-- **REGION_RATING_CLIENT_W_CITY**: Nuestra calificación de la región donde vive el cliente teniendo en cuenta la ciudad (1,2,3).
-- **WEEKDAY_APPR_PROCESS_START**: En qué día de la semana el cliente solicitó el préstamo.
-- **HOUR_APPR_PROCESS_START**: Aproximadamente a qué hora el cliente solicitó el préstamo.
-- **REG_REGION_NOT_LIVE_REGION**: Indicador si la dirección permanente del cliente no coincide con la dirección de contacto (1=diferente, 0=igual, a nivel de región).
-- **REG_REGION_NOT_WORK_REGION**: Indicador si la dirección permanente del cliente no coincide con la dirección de trabajo (1=diferente, 0=igual, a nivel de región).
-- **LIVE_REGION_NOT_WORK_REGION**: Indicador si la dirección de contacto del cliente no coincide con la dirección de trabajo (1=diferente, 0=igual, a nivel de región).
-- **REG_CITY_NOT_LIVE_CITY**: Indicador si la dirección permanente del cliente no coincide con la dirección de contacto (1=diferente, 0=igual, a nivel de ciudad).
-- **REG_CITY_NOT_WORK_CITY**: Indicador si la dirección permanente del cliente no coincide con la dirección de trabajo (1=diferente, 0=igual, a nivel de ciudad).
-- **LIVE_CITY_NOT_WORK_CITY**: Indicador si la dirección de contacto del cliente no coincide con la dirección de trabajo (1=diferente, 0=igual, a nivel de ciudad).
-- **ORGANIZATION_TYPE**: Tipo de organización donde trabaja el cliente.
-- **EXT_SOURCE_1**: Puntuación normalizada de fuente de datos externa.
-- **EXT_SOURCE_2**: Puntuación normalizada de fuente de datos externa.
-- **EXT_SOURCE_3**: Puntuación normalizada de fuente de datos externa.
-- **APARTMENTS_AVG**: Información normalizada sobre el edificio donde vive el cliente, tamaño promedio del apartamento, área común, área habitable, edad del edificio, número de ascensores, número de entradas, estado del edificio, número de pisos.
-- **BASEMENTAREA_AVG**: Información normalizada sobre el sótano del edificio donde vive el cliente.
-- **YEARS_BEGINEXPLUATATION_AVG**: Información normalizada sobre el inicio de la explotación del edificio donde vive el cliente.
-- **YEARS_BUILD_AVG**: Información normalizada sobre la antigüedad del edificio donde vive el cliente.
-- **COMMONAREA_AVG**: Información normalizada sobre áreas comunes en el edificio donde vive el cliente.
-- **ELEVATORS_AVG**: Información normalizada sobre ascensores en el edificio donde vive el cliente.
-- **ENTRANCES_AVG**: Información normalizada sobre entradas en el edificio donde vive el cliente.
-- **FLOORSMAX_AVG**: Información normalizada sobre el número máximo de pisos en el edificio donde vive el cliente.
-- **FLOORSMIN_AVG**: Información normalizada sobre el número mínimo de pisos en el edificio donde vive el cliente.
-- **LANDAREA_AVG**: Información normalizada sobre el área de terreno del edificio donde vive el cliente.
-- **LIVINGAPARTMENTS_AVG**: Información normalizada sobre apartamentos habitables en el edificio donde vive el cliente.
-- **LIVINGAREA_AVG**: Información normalizada sobre el área habitable en el edificio donde vive el cliente.
-- **NONLIVINGAPARTMENTS_AVG**: Información normalizada sobre apartamentos no habitables en el edificio donde vive el cliente.
-- **NONLIVINGAREA_AVG**: Información normalizada sobre áreas no habitables en el edificio donde vive el cliente.
-- **APARTMENTS_MODE**: Modo de la información normalizada sobre apartamentos en el edificio donde vive el cliente.
-- **BASEMENTAREA_MODE**: Modo de la información normalizada sobre el sótano del edificio donde vive el cliente.
-- **YEARS_BEGINEXPLUATATION_MODE**: Modo de la información normalizada sobre el inicio de la explotación del edificio donde vive el cliente.
-- **YEARS_BUILD_MODE**: Modo de la información normalizada sobre la antigüedad del edificio donde vive el cliente.
-- **COMMONAREA_MODE**: Modo de la información normalizada sobre áreas comunes en el edificio donde vive el cliente.
-- **ELEVATORS_MODE**: Modo de la información normalizada sobre ascensores en el edificio donde vive el cliente.
-- **ENTRANCES_MODE**: Modo de la información normalizada sobre entradas en el edificio donde vive el cliente.
-- **FLOORSMAX_MODE**: Modo de la información normalizada sobre el número máximo de pisos en el edificio donde vive el cliente.
-- **FLOORSMIN_MODE**: Modo de la información normalizada sobre el número mínimo de pisos en el edificio donde vive el cliente.
-- **LANDAREA_MODE**: Modo de la información normalizada sobre el área de terreno del edificio donde vive el cliente.
-- **LIVINGAPARTMENTS_MODE**: Modo de la información normalizada sobre apartamentos habitables en el edificio donde vive el cliente.
-- **LIVINGAREA_MODE**: Modo de la información normalizada sobre el área habitable en el edificio donde vive el cliente.
-- **NONLIVINGAPARTMENTS_MODE**: Modo de la información normalizada sobre apartamentos no habitables en el edificio donde vive el cliente.
-- **NONLIVINGAREA_MODE**: Modo de la información normalizada sobre áreas no habitables en el edificio donde vive el cliente.
-- **APARTMENTS_MEDI**: Mediana de la información normalizada sobre apartamentos en el edificio donde vive el cliente.
-- **BASEMENTAREA_MEDI**: Mediana de la información normalizada sobre el sótano del edificio donde vive el cliente.
-- **YEARS_BEGINEXPLUATATION_MEDI**: Mediana de la información normalizada sobre el inicio de la explotación del edificio donde vive el cliente.
-- **YEARS_BUILD_MEDI**: Mediana de la información normalizada sobre la antigüedad del edificio donde vive el cliente.
-- **COMMONAREA_MEDI**: Mediana de la información normalizada sobre áreas comunes en el edificio donde vive el cliente.
-- **ELEVATORS_MEDI**: Mediana de la información normalizada sobre ascensores en el edificio donde vive el cliente.
-- **ENTRANCES_MEDI**: Mediana de la información normalizada sobre entradas en el edificio donde vive el cliente.
-- **FLOORSMAX_MEDI**: Mediana de la información normalizada sobre el número máximo de pisos en el edificio donde vive el cliente.
-- **FLOORSMIN_MEDI**: Mediana de la información normalizada sobre el número mínimo de pisos en el edificio donde vive el cliente.
-- **LANDAREA_MEDI**: Mediana de la información normalizada sobre el área de terreno del edificio donde vive el cliente.
-- **LIVINGAPARTMENTS_MEDI**: Mediana de la información normalizada sobre apartamentos habitables en el edificio donde vive el cliente.
-- **LIVINGAREA_MEDI**: Mediana de la información normalizada sobre el área habitable en el edificio donde vive el cliente.
-- **NONLIVINGAPARTMENTS_MEDI**: Mediana de la información normalizada sobre apartamentos no habitables en el edificio donde vive el cliente.
-- **NONLIVINGAREA_MEDI**: Mediana de la información normalizada sobre áreas no habitables en el edificio donde vive el cliente.
-- **FONDKAPREMONT_MODE**: Modo de la información normalizada sobre el fondo de reparación del edificio donde vive el cliente.
-- **HOUSETYPE_MODE**: Modo de la información normalizada sobre el tipo de casa donde vive el cliente.
-- **TOTALAREA_MODE**: Modo de la información normalizada sobre el área total del edificio donde vive el cliente.
-- **WALLSMATERIAL_MODE**: Modo de la información normalizada sobre el material de las paredes del edificio donde vive el cliente.
-- **EMERGENCYSTATE_MODE**: Modo de la información normalizada sobre el estado de emergencia del edificio donde vive el cliente.
-- **OBS_30_CNT_SOCIAL_CIRCLE**: Cuántas observaciones del entorno social del cliente con 30 DPD (días de mora) por defecto.
-- **DEF_30_CNT_SOCIAL_CIRCLE**: Cuántas observaciones del entorno social del cliente incumplieron en 30 DPD (días de mora).
-- **OBS_60_CNT_SOCIAL_CIRCLE**: Cuántas observaciones del entorno social del cliente con 60 DPD (días de mora) por defecto.
-- **DEF_60_CNT_SOCIAL_CIRCLE**: Cuántas observaciones del entorno social del cliente incumplieron en 60 DPD (días de mora).
-- **DAYS_LAST_PHONE_CHANGE**: Cuántos días antes de la solicitud el cliente cambió de teléfono.
-- **FLAG_DOCUMENT_2** a **FLAG_DOCUMENT_21**: Indicadores si el cliente proporcionó documentos específicos (2 a 21).
-- **AMT_REQ_CREDIT_BUREAU_HOUR**: Número de consultas al Buró de Crédito sobre el cliente una hora antes de la solicitud.
-- **AMT_REQ_CREDIT_BUREAU_DAY**: Número de consultas al Buró de Crédito sobre el cliente un día antes de la solicitud (excluyendo una hora antes de la solicitud).
-- **AMT_REQ_CREDIT_BUREAU_WEEK**: Número de consultas al Buró de Crédito sobre el cliente una semana antes de la solicitud (excluyendo un día antes de la solicitud).
-- **AMT_REQ_CREDIT_BUREAU_MON**: Número de consultas al Buró de Crédito sobre el cliente un mes antes de la solicitud (excluyendo una semana antes de la solicitud).
-- **AMT_REQ_CREDIT_BUREAU_QRT**: Número de consultas al Buró de Crédito sobre el cliente 3 meses antes de la solicitud (excluyendo un mes antes de la solicitud).
-- **AMT_REQ_CREDIT_BUREAU_YEAR**: Número de consultas al Buró de Crédito sobre el cliente un año antes de la solicitud (excluyendo los últimos 3 meses antes de la solicitud).
+
+-   **SK_ID_CURR**: Identificador del préstamo en nuestra muestra.
+-   **TARGET**: Variable objetivo (1 - cliente con dificultades de pago: tuvo un pago tardío más de X días en al menos una de las primeras Y cuotas del préstamo en nuestra muestra, 0 - todos los demás casos).
+-   **NAME_CONTRACT_TYPE**: Identificación si el préstamo es en efectivo o revolving.
+-   **CODE_GENDER**: Género del cliente.
+-   **FLAG_OWN_CAR**: Indicador si el cliente posee un coche.
+-   **FLAG_OWN_REALTY**: Indicador si el cliente posee una casa o piso.
+-   **CNT_CHILDREN**: Número de hijos que tiene el cliente.
+-   **AMT_INCOME_TOTAL**: Ingresos del cliente.
+-   **AMT_CREDIT**: Monto del crédito del préstamo.
+-   **AMT_ANNUITY**: Anualidad del préstamo.
+-   **AMT_GOODS_PRICE**: Para los préstamos al consumo, es el precio de los bienes por los que se concedió el préstamo.
+-   **NAME_TYPE_SUITE**: Quién acompañaba al cliente cuando solicitaba el préstamo.
+-   **NAME_INCOME_TYPE**: Tipo de ingresos del cliente (empresario, trabajando, baja por maternidad,...).
+-   **NAME_EDUCATION_TYPE**: Nivel de educación más alto alcanzado por el cliente.
+-   **NAME_FAMILY_STATUS**: Estado familiar del cliente.
+-   **NAME_HOUSING_TYPE**: Cuál es la situación de vivienda del cliente (alquilando, viviendo con los padres, ...).
+-   **REGION_POPULATION_RELATIVE**: Población normalizada de la región donde vive el cliente (un número más alto significa que el cliente vive en una región más poblada).
+-   **DAYS_BIRTH**: Edad del cliente en días en el momento de la solicitud.
+-   **DAYS_EMPLOYED**: Cuántos días antes de la solicitud comenzó el empleo actual la persona.
+-   **DAYS_REGISTRATION**: Cuántos días antes de la solicitud cambió el cliente su registro.
+-   **DAYS_ID_PUBLISH**: Cuántos días antes de la solicitud cambió el cliente el documento de identidad con el que solicitó el préstamo.
+-   **OWN_CAR_AGE**: Edad del coche del cliente.
+-   **FLAG_MOBIL**: Indicador si el cliente proporcionó teléfono móvil (1=SI, 0=NO).
+-   **FLAG_EMP_PHONE**: Indicador si el cliente proporcionó teléfono del trabajo (1=SI, 0=NO).
+-   **FLAG_WORK_PHONE**: Indicador si el cliente proporcionó teléfono fijo (1=SI, 0=NO).
+-   **FLAG_CONT_MOBILE**: Indicador si el teléfono móvil era alcanzable (1=SI, 0=NO).
+-   **FLAG_PHONE**: Indicador si el cliente proporcionó teléfono fijo (1=SI, 0=NO).
+-   **FLAG_EMAIL**: Indicador si el cliente proporcionó correo electrónico (1=SI, 0=NO).
+-   **OCCUPATION_TYPE**: Qué tipo de ocupación tiene el cliente.
+-   **CNT_FAM_MEMBERS**: Cuántos miembros de la familia tiene el cliente.
+-   **REGION_RATING_CLIENT**: Nuestra calificación de la región donde vive el cliente (1,2,3).
+-   **REGION_RATING_CLIENT_W_CITY**: Nuestra calificación de la región donde vive el cliente teniendo en cuenta la ciudad (1,2,3).
+-   **WEEKDAY_APPR_PROCESS_START**: En qué día de la semana el cliente solicitó el préstamo.
+-   **HOUR_APPR_PROCESS_START**: Aproximadamente a qué hora el cliente solicitó el préstamo.
+-   **REG_REGION_NOT_LIVE_REGION**: Indicador si la dirección permanente del cliente no coincide con la dirección de contacto (1=diferente, 0=igual, a nivel de región).
+-   **REG_REGION_NOT_WORK_REGION**: Indicador si la dirección permanente del cliente no coincide con la dirección de trabajo (1=diferente, 0=igual, a nivel de región).
+-   **LIVE_REGION_NOT_WORK_REGION**: Indicador si la dirección de contacto del cliente no coincide con la dirección de trabajo (1=diferente, 0=igual, a nivel de región).
+-   **REG_CITY_NOT_LIVE_CITY**: Indicador si la dirección permanente del cliente no coincide con la dirección de contacto (1=diferente, 0=igual, a nivel de ciudad).
+-   **REG_CITY_NOT_WORK_CITY**: Indicador si la dirección permanente del cliente no coincide con la dirección de trabajo (1=diferente, 0=igual, a nivel de ciudad).
+-   **LIVE_CITY_NOT_WORK_CITY**: Indicador si la dirección de contacto del cliente no coincide con la dirección de trabajo (1=diferente, 0=igual, a nivel de ciudad).
+-   **ORGANIZATION_TYPE**: Tipo de organización donde trabaja el cliente.
+-   **EXT_SOURCE_1**: Puntuación normalizada de fuente de datos externa.
+-   **EXT_SOURCE_2**: Puntuación normalizada de fuente de datos externa.
+-   **EXT_SOURCE_3**: Puntuación normalizada de fuente de datos externa.
+-   **APARTMENTS_AVG**: Información normalizada sobre el edificio donde vive el cliente, tamaño promedio del apartamento, área común, área habitable, edad del edificio, número de ascensores, número de entradas, estado del edificio, número de pisos.
+-   **BASEMENTAREA_AVG**: Información normalizada sobre el sótano del edificio donde vive el cliente.
+-   **YEARS_BEGINEXPLUATATION_AVG**: Información normalizada sobre el inicio de la explotación del edificio donde vive el cliente.
+-   **YEARS_BUILD_AVG**: Información normalizada sobre la antigüedad del edificio donde vive el cliente.
+-   **COMMONAREA_AVG**: Información normalizada sobre áreas comunes en el edificio donde vive el cliente.
+-   **ELEVATORS_AVG**: Información normalizada sobre ascensores en el edificio donde vive el cliente.
+-   **ENTRANCES_AVG**: Información normalizada sobre entradas en el edificio donde vive el cliente.
+-   **FLOORSMAX_AVG**: Información normalizada sobre el número máximo de pisos en el edificio donde vive el cliente.
+-   **FLOORSMIN_AVG**: Información normalizada sobre el número mínimo de pisos en el edificio donde vive el cliente.
+-   **LANDAREA_AVG**: Información normalizada sobre el área de terreno del edificio donde vive el cliente.
+-   **LIVINGAPARTMENTS_AVG**: Información normalizada sobre apartamentos habitables en el edificio donde vive el cliente.
+-   **LIVINGAREA_AVG**: Información normalizada sobre el área habitable en el edificio donde vive el cliente.
+-   **NONLIVINGAPARTMENTS_AVG**: Información normalizada sobre apartamentos no habitables en el edificio donde vive el cliente.
+-   **NONLIVINGAREA_AVG**: Información normalizada sobre áreas no habitables en el edificio donde vive el cliente.
+-   **APARTMENTS_MODE**: Modo de la información normalizada sobre apartamentos en el edificio donde vive el cliente.
+-   **BASEMENTAREA_MODE**: Modo de la información normalizada sobre el sótano del edificio donde vive el cliente.
+-   **YEARS_BEGINEXPLUATATION_MODE**: Modo de la información normalizada sobre el inicio de la explotación del edificio donde vive el cliente.
+-   **YEARS_BUILD_MODE**: Modo de la información normalizada sobre la antigüedad del edificio donde vive el cliente.
+-   **COMMONAREA_MODE**: Modo de la información normalizada sobre áreas comunes en el edificio donde vive el cliente.
+-   **ELEVATORS_MODE**: Modo de la información normalizada sobre ascensores en el edificio donde vive el cliente.
+-   **ENTRANCES_MODE**: Modo de la información normalizada sobre entradas en el edificio donde vive el cliente.
+-   **FLOORSMAX_MODE**: Modo de la información normalizada sobre el número máximo de pisos en el edificio donde vive el cliente.
+-   **FLOORSMIN_MODE**: Modo de la información normalizada sobre el número mínimo de pisos en el edificio donde vive el cliente.
+-   **LANDAREA_MODE**: Modo de la información normalizada sobre el área de terreno del edificio donde vive el cliente.
+-   **LIVINGAPARTMENTS_MODE**: Modo de la información normalizada sobre apartamentos habitables en el edificio donde vive el cliente.
+-   **LIVINGAREA_MODE**: Modo de la información normalizada sobre el área habitable en el edificio donde vive el cliente.
+-   **NONLIVINGAPARTMENTS_MODE**: Modo de la información normalizada sobre apartamentos no habitables en el edificio donde vive el cliente.
+-   **NONLIVINGAREA_MODE**: Modo de la información normalizada sobre áreas no habitables en el edificio donde vive el cliente.
+-   **APARTMENTS_MEDI**: Mediana de la información normalizada sobre apartamentos en el edificio donde vive el cliente.
+-   **BASEMENTAREA_MEDI**: Mediana de la información normalizada sobre el sótano del edificio donde vive el cliente.
+-   **YEARS_BEGINEXPLUATATION_MEDI**: Mediana de la información normalizada sobre el inicio de la explotación del edificio donde vive el cliente.
+-   **YEARS_BUILD_MEDI**: Mediana de la información normalizada sobre la antigüedad del edificio donde vive el cliente.
+-   **COMMONAREA_MEDI**: Mediana de la información normalizada sobre áreas comunes en el edificio donde vive el cliente.
+-   **ELEVATORS_MEDI**: Mediana de la información normalizada sobre ascensores en el edificio donde vive el cliente.
+-   **ENTRANCES_MEDI**: Mediana de la información normalizada sobre entradas en el edificio donde vive el cliente.
+-   **FLOORSMAX_MEDI**: Mediana de la información normalizada sobre el número máximo de pisos en el edificio donde vive el cliente.
+-   **FLOORSMIN_MEDI**: Mediana de la información normalizada sobre el número mínimo de pisos en el edificio donde vive el cliente.
+-   **LANDAREA_MEDI**: Mediana de la información normalizada sobre el área de terreno del edificio donde vive el cliente.
+-   **LIVINGAPARTMENTS_MEDI**: Mediana de la información normalizada sobre apartamentos habitables en el edificio donde vive el cliente.
+-   **LIVINGAREA_MEDI**: Mediana de la información normalizada sobre el área habitable en el edificio donde vive el cliente.
+-   **NONLIVINGAPARTMENTS_MEDI**: Mediana de la información normalizada sobre apartamentos no habitables en el edificio donde vive el cliente.
+-   **NONLIVINGAREA_MEDI**: Mediana de la información normalizada sobre áreas no habitables en el edificio donde vive el cliente.
+-   **FONDKAPREMONT_MODE**: Modo de la información normalizada sobre el fondo de reparación del edificio donde vive el cliente.
+-   **HOUSETYPE_MODE**: Modo de la información normalizada sobre el tipo de casa donde vive el cliente.
+-   **TOTALAREA_MODE**: Modo de la información normalizada sobre el área total del edificio donde vive el cliente.
+-   **WALLSMATERIAL_MODE**: Modo de la información normalizada sobre el material de las paredes del edificio donde vive el cliente.
+-   **EMERGENCYSTATE_MODE**: Modo de la información normalizada sobre el estado de emergencia del edificio donde vive el cliente.
+-   **OBS_30_CNT_SOCIAL_CIRCLE**: Cuántas observaciones del entorno social del cliente con 30 DPD (días de mora) por defecto.
+-   **DEF_30_CNT_SOCIAL_CIRCLE**: Cuántas observaciones del entorno social del cliente incumplieron en 30 DPD (días de mora).
+-   **OBS_60_CNT_SOCIAL_CIRCLE**: Cuántas observaciones del entorno social del cliente con 60 DPD (días de mora) por defecto.
+-   **DEF_60_CNT_SOCIAL_CIRCLE**: Cuántas observaciones del entorno social del cliente incumplieron en 60 DPD (días de mora).
+-   **DAYS_LAST_PHONE_CHANGE**: Cuántos días antes de la solicitud el cliente cambió de teléfono.
+-   **FLAG_DOCUMENT_2** a **FLAG_DOCUMENT_21**: Indicadores si el cliente proporcionó documentos específicos (2 a 21).
+-   **AMT_REQ_CREDIT_BUREAU_HOUR**: Número de consultas al Buró de Crédito sobre el cliente una hora antes de la solicitud.
+-   **AMT_REQ_CREDIT_BUREAU_DAY**: Número de consultas al Buró de Crédito sobre el cliente un día antes de la solicitud (excluyendo una hora antes de la solicitud).
+-   **AMT_REQ_CREDIT_BUREAU_WEEK**: Número de consultas al Buró de Crédito sobre el cliente una semana antes de la solicitud (excluyendo un día antes de la solicitud).
+-   **AMT_REQ_CREDIT_BUREAU_MON**: Número de consultas al Buró de Crédito sobre el cliente un mes antes de la solicitud (excluyendo una semana antes de la solicitud).
+-   **AMT_REQ_CREDIT_BUREAU_QRT**: Número de consultas al Buró de Crédito sobre el cliente 3 meses antes de la solicitud (excluyendo un mes antes de la solicitud).
+-   **AMT_REQ_CREDIT_BUREAU_YEAR**: Número de consultas al Buró de Crédito sobre el cliente un año antes de la solicitud (excluyendo los últimos 3 meses antes de la solicitud).
 
 ## Teoría
+
 **Brevemente responder con tus propias palabras 2 de las siguientes 3 preguntas:**
 
-- i) ¿Qué es Supervised Machine Learning y cuáles son algunas de sus aplicaciones en análisis de clasificación?
+-   
 
-El **aprendizaje supervisado** o **Supervised Machine Learning** es una categoría del machine learning donde el modelo se entrena con un conjunto de datos etiquetados, es decir, para cada entrada en el conjunto de entrenamiento, ya conocemos la salida correcta. El objetivo es que el modelo aprenda a predecir la salida para nuevas entradas basándose en esta experiencia de entrenamiento. En análisis de clasificación, se utiliza para predecir la categoría o clase a la que pertenece una nueva entrada. Algunas aplicaciones incluyen:
+    i)  ¿Qué es Supervised Machine Learning y cuáles son algunas de sus aplicaciones en análisis de clasificación?
 
-- Detección de spam en correos electrónicos.
-- Diagnóstico médico.
-- Reconocimiento de imágenes.
-- Detección de fraude en transacciones.
+El **aprendizaje supervisado** o **Supervised Machine Learning** es una categoría del machine learning donde el modelo se entrena con un conjunto de datos etiquetados, es decir, para cada entrada en el conjunto de entrenamiento, ya conocemos la salida correcta.
+El objetivo es que el modelo aprenda a predecir la salida para nuevas entradas basándose en esta experiencia de entrenamiento.
+En análisis de clasificación, se utiliza para predecir la categoría o clase a la que pertenece una nueva entrada.
+Algunas aplicaciones incluyen:
 
-- ii) ¿Cuáles son los principales algoritmos de Supervised Machine Learning - Classification? Brevemente describir con tus propias palarbas 4 – 6 de los principales algoritmos de Supervised Machine Learning - Classification.
+-   Detección de spam en correos electrónicos.
+
+-   Diagnóstico médico.
+
+-   Reconocimiento de imágenes.
+
+-   Detección de fraude en transacciones.
+
+-   
+
+    ii) ¿Cuáles son los principales algoritmos de Supervised Machine Learning - Classification? Brevemente describir con tus propias palarbas 4 -- 6 de los principales algoritmos de Supervised Machine Learning - Classification.
 
 Hay varios modelos en el universo de la clasificación supervisada, cada uno con su propia fortaleza:
 
-- **Regresión Logística:** Utilizada para clasificación binaria, modela la probabilidad de que una entrada pertenezca a una clase específica.
-- **K-Nearest Neighbors (KNN):** Clasifica una entrada basándose en las clases de sus 'K' vecinos más cercanos.
-- **Máquinas de Vector Soporte (SVM):** Busca el hiperplano que mejor separa las clases en el espacio de características.
-- **Árboles de Decisión:** Construye un árbol donde cada nodo representa una característica y cada hoja una clase.
-- **Bosques Aleatorios:** Un ensamble de múltiples árboles de decisión para mejorar la estabilidad y precisión.
-- **Redes Neuronales Artificiales:** Aprenden patrones complejos y son potentes para clasificación en datasets grandes y complejos.
+-   **Regresión Logística:** Utilizada para clasificación binaria, modela la probabilidad de que una entrada pertenezca a una clase específica.
 
-- iii) Respecto a la selección de los resultados de los modelos de clasificación ¿Qué es la matriz de
-confusión? ¿Qué es el estadístico Kappa? ¿Cuál es la relación entre AUC y ROC Curve?
+-   **K-Nearest Neighbors (KNN):** Clasifica una entrada basándose en las clases de sus 'K' vecinos más cercanos.
 
-- **Matriz de confusión:** Herramienta que muestra el número de predicciones correctas e incorrectas divididas en categorías.
-- **Estadístico Kappa:** Evalúa la precisión de una clasificación considerando la coincidencia que podría suceder por puro azar.
-- **Relación entre AUC y ROC Curve:** La curva ROC evalúa cómo de bien un modelo distingue entre categorías a distintos niveles de decisión. AUC, el área bajo esta curva, resume en un número cuán efectivo es el modelo.
+-   **Máquinas de Vector Soporte (SVM):** Busca el hiperplano que mejor separa las clases en el espacio de características.
 
+-   **Árboles de Decisión:** Construye un árbol donde cada nodo representa una característica y cada hoja una clase.
+
+-   **Bosques Aleatorios:** Un ensamble de múltiples árboles de decisión para mejorar la estabilidad y precisión.
+
+-   **Redes Neuronales Artificiales:** Aprenden patrones complejos y son potentes para clasificación en datasets grandes y complejos.
+
+-   
+
+    iii) Respecto a la selección de los resultados de los modelos de clasificación ¿Qué es la matriz de confusión? ¿Qué es el estadístico Kappa? ¿Cuál es la relación entre AUC y ROC Curve?
+
+-   **Matriz de confusión:** Herramienta que muestra el número de predicciones correctas e incorrectas divididas en categorías.
+
+-   **Estadístico Kappa:** Evalúa la precisión de una clasificación considerando la coincidencia que podría suceder por puro azar.
+
+-   **Relación entre AUC y ROC Curve:** La curva ROC evalúa cómo de bien un modelo distingue entre categorías a distintos niveles de decisión.
+    AUC, el área bajo esta curva, resume en un número cuán efectivo es el modelo.
 
 ## Obtención de Data
 
 ```{r message=FALSE, warning=FALSE}
 library(readr)
 library(dplyr)
+library(tidyverse)
 library(tidyr)
 library(purrr)
 library(scales)
@@ -175,19 +201,20 @@ library(rpart.plot)
 library(e1071)
 library(cluster)
 library(factoextra)
+library(class)
 ```
-
 
 ```{r message=FALSE, warning=FALSE}
 bank_application <- read_csv("bank_application_data.csv")
 head(bank_application)
 ```
 
-
 ## Preparación y Analisis Exploratorio
+
 **Desarrollar Análisis Exploratorio de los Datos (EDA) que incluye los siguientes elementos:**
 
-### a. Identificación de NA’s
+### a. Identificación de NA's
+
 ```{r message=FALSE, warning=FALSE}
 # Contar el total de NA's en todo el dataframe
 total_NA <- sum(is.na(bank_application))
@@ -199,7 +226,8 @@ print("NA's por columna:")
 print(NA_por_columna)
 ```
 
-### b. Reemplazo de NA’s
+### b. Reemplazo de NA's
+
 ```{r}
 # Función para calcular la moda, ajustada para trabajar con caracteres directamente
 getMode <- function(v) {
@@ -229,20 +257,24 @@ print(paste("Total de NA's después de la imputación: ", total_NA_after))
 ```
 
 ### c. Medidas descriptivas
+
 ```{r}
 # Medidas descriptivas básicas
 summary(bank_application)
 ```
-**Insights de Analisis Descriptivo**
-- **TARGET**: La mayoría de los préstamos en la muestra no presentan dificultades de pago (el 92% tienen un TARGET de 0).
-- **CNT_CHILDREN**: La distribución muestra que la mayoría de los clientes no tienen hijos, con una mediana de 0. Sin embargo, hay casos con hasta 19 hijos, lo cual es inusual y podría ser un outlier.
-- **AMT_INCOME_TOTAL**: Existe una gran variabilidad en los ingresos de los clientes, desde un mínimo de 25,650 hasta un máximo de 117,000,000. Esto sugiere una alta disparidad económica entre los solicitantes de préstamos.
+
+**Insights de Analisis Descriptivo** - **TARGET**: La mayoría de los préstamos en la muestra no presentan dificultades de pago (el 92% tienen un TARGET de 0).
+- **CNT_CHILDREN**: La distribución muestra que la mayoría de los clientes no tienen hijos, con una mediana de 0.
+Sin embargo, hay casos con hasta 19 hijos, lo cual es inusual y podría ser un outlier.
+- **AMT_INCOME_TOTAL**: Existe una gran variabilidad en los ingresos de los clientes, desde un mínimo de 25,650 hasta un máximo de 117,000,000.
+Esto sugiere una alta disparidad económica entre los solicitantes de préstamos.
 - **DAYS_EMPLOYED**: El valor máximo es 365,243 días (aproximadamente 1000 años), lo cual es claramente un error o un valor utilizado para indicar un tipo específico de desempleo o condición laboral no tradicional.
 - **OWN_CAR_AGE**: La edad del coche tiene un máximo de 91 años, lo cual es poco común y podría indicar algunos valores atípicos o errores en los datos.
 - **EXT_SOURCE_2 y EXT_SOURCE_3**: Estas fuentes externas de puntaje tienen valores mínimos cercanos a 0 y máximos cercanos a 1, lo que indica que están normalizadas y podrían representar algún tipo de calificación de crédito o puntaje de riesgo.
 - **AMT_REQ_CREDIT_BUREAU_QRT**: Algunos clientes tienen hasta 261 consultas en el último trimestre, lo que es extremadamente alto y puede indicar un comportamiento de búsqueda de crédito muy activo o un posible error en los datos.
 
 ### d. Medidas de dispersión
+
 ```{r message=FALSE, warning=FALSE}
 # Obtener solo las columnas numéricas
 numeric_vars <- bank_application %>% select(where(is.numeric))
@@ -283,22 +315,23 @@ resultados_finales <- resultados_finales %>%
 # Ver los resultados
 print(resultados_finales)
 ```
+
 **Insights de Medidas de Dispersión**
 
-- **Ingresos Totales (AMT_INCOME_TOTAL)**: Hay una variabilidad significativa en los ingresos totales, con un máximo extremadamente alto de 117,000,000, lo que indica la presencia de outliers muy alejados del ingreso medio.
+-   **Ingresos Totales (AMT_INCOME_TOTAL)**: Hay una variabilidad significativa en los ingresos totales, con un máximo extremadamente alto de 117,000,000, lo que indica la presencia de outliers muy alejados del ingreso medio.
 
-- **Cantidad de Crédito (AMT_CREDIT)**: La cantidad de crédito también muestra una amplia dispersión, desde 45,000 hasta 4,050,000, reflejando la diversidad en las necesidades de financiamiento de los solicitantes.
+-   **Cantidad de Crédito (AMT_CREDIT)**: La cantidad de crédito también muestra una amplia dispersión, desde 45,000 hasta 4,050,000, reflejando la diversidad en las necesidades de financiamiento de los solicitantes.
 
-- **Días Empleados (DAYS_EMPLOYED)**: La variable días empleados incluye un valor máximo de 365,243, lo que sugiere un valor especial o un placeholder para ciertas situaciones, como el desempleo o la jubilación.
+-   **Días Empleados (DAYS_EMPLOYED)**: La variable días empleados incluye un valor máximo de 365,243, lo que sugiere un valor especial o un placeholder para ciertas situaciones, como el desempleo o la jubilación.
 
-- **Solicitudes al Buró de Crédito (AMT_REQ_CREDIT_BUREAU_QRT)**: Algunos solicitantes tienen hasta 261 consultas en el último trimestre, lo que podría indicar un comportamiento de búsqueda de crédito muy activo o posibles errores en los datos.
+-   **Solicitudes al Buró de Crédito (AMT_REQ_CREDIT_BUREAU_QRT)**: Algunos solicitantes tienen hasta 261 consultas en el último trimestre, lo que podría indicar un comportamiento de búsqueda de crédito muy activo o posibles errores en los datos.
 
-- **Distribución de TARGET**: La mayoría de los solicitantes no tienen dificultades de pago (TARGET = 0), pero hay una variabilidad presente con un pequeño porcentaje que sí las tiene (TARGET = 1), lo que es crucial para el análisis de riesgo de crédito.
-
+-   **Distribución de TARGET**: La mayoría de los solicitantes no tienen dificultades de pago (TARGET = 0), pero hay una variabilidad presente con un pequeño porcentaje que sí las tiene (TARGET = 1), lo que es crucial para el análisis de riesgo de crédito.
 
 ### e. Transformación Necesaria
 
 **Limpieza de datos atípicos extremos**
+
 ```{r}
 # Convertir valores negativos a positivos para DAYS_BIRTH y DAYS_EMPLOYED
 bank_application <- bank_application %>%
@@ -336,9 +369,11 @@ for (variable_name in variables_to_check) {
 ```
 
 ### f. Identificación de patrones y/o tendencias en los datos mediante el uso de gráficos incluyendo bar plots, line plots, pie plots, histogramas, matriz de correlación, box plot, scatter plot, qq-
-plot, etc Mostrar al menos 4 – 6 gráficos.
+
+plot, etc Mostrar al menos 4 -- 6 gráficos.
 
 #### 1. Histograma de Edad
+
 ```{r}
 ggplot(bank_application, aes(x = DAYS_BIRTH / 365)) +
   geom_histogram(bins = 30, fill = "skyblue", color = "black") +
@@ -347,6 +382,7 @@ ggplot(bank_application, aes(x = DAYS_BIRTH / 365)) +
 ```
 
 #### 2. Box Plot de Ingresos Totales
+
 ```{r}
 ggplot(bank_application, aes(x = factor(TARGET), y = AMT_INCOME_TOTAL)) +
   geom_boxplot() + 
@@ -356,6 +392,7 @@ ggplot(bank_application, aes(x = factor(TARGET), y = AMT_INCOME_TOTAL)) +
 ```
 
 #### 3. Gráfico de Barras del Número de Hijos
+
 ```{r}
 ggplot(bank_application, aes(x = factor(CNT_CHILDREN), fill = factor(TARGET))) +
   geom_bar(position = "dodge") +
@@ -365,6 +402,7 @@ ggplot(bank_application, aes(x = factor(CNT_CHILDREN), fill = factor(TARGET))) +
 ```
 
 #### 4. Matriz de Correlación
+
 ```{r}
 df_cor <- bank_application %>%
   select(
@@ -386,6 +424,7 @@ corrplot(cor_matrix, order = 'AOE', method = "circle",
 ```
 
 #### 5. Relación entre Ingresos Totales y Monto del Crédito por TARGET
+
 ```{r}
 ggplot(bank_application, aes(x = AMT_CREDIT, y = AMT_INCOME_TOTAL, color = factor(TARGET))) +
   geom_point(alpha = 0.5) +
@@ -395,6 +434,7 @@ ggplot(bank_application, aes(x = AMT_CREDIT, y = AMT_INCOME_TOTAL, color = facto
 ```
 
 #### 6. Distribución de la Edad de los Solicitantes Comparando Con y Sin Dificultades de Pago
+
 ```{r}
 ggplot(bank_application, aes(x = DAYS_BIRTH / 365, fill = as.factor(TARGET))) +
   geom_density(alpha = 0.5) +
@@ -405,30 +445,32 @@ ggplot(bank_application, aes(x = DAYS_BIRTH / 365, fill = as.factor(TARGET))) +
 
 **Insights Clave del Análisis Exploratorio**
 
-- **Edad de los Solicitantes**: El histograma muestra una distribución relativamente uniforme de edades entre los solicitantes, concentrándose principalmente entre los 30 y 60 años. Esto sugiere que la mayoría de los solicitantes están en su etapa laboralmente activa.
+-   **Edad de los Solicitantes**: El histograma muestra una distribución relativamente uniforme de edades entre los solicitantes, concentrándose principalmente entre los 30 y 60 años.
+    Esto sugiere que la mayoría de los solicitantes están en su etapa laboralmente activa.
 
-- **Ingresos Totales por TARGET**: La presencia de valores extremadamente altos en los ingresos totales de algunos solicitantes, comparados entre aquellos que tienen y no tienen dificultades de pago, indica la importancia de considerar cómo los ingresos afectan la capacidad de pago.
+-   **Ingresos Totales por TARGET**: La presencia de valores extremadamente altos en los ingresos totales de algunos solicitantes, comparados entre aquellos que tienen y no tienen dificultades de pago, indica la importancia de considerar cómo los ingresos afectan la capacidad de pago.
 
-- **Número de Hijos por TARGET**: La mayoría de los solicitantes sin dificultades de pago tienen pocos o ningún hijo, mientras que aquellos con dificultades de pago parecen tener una distribución similar, lo que podría implicar que el número de hijos no tiene un impacto directo en las dificultades de pago.
+-   **Número de Hijos por TARGET**: La mayoría de los solicitantes sin dificultades de pago tienen pocos o ningún hijo, mientras que aquellos con dificultades de pago parecen tener una distribución similar, lo que podría implicar que el número de hijos no tiene un impacto directo en las dificultades de pago.
 
-- **Correlación entre Variables**: La matriz de correlación sugiere que ciertas variables como la edad y los días de empleo están altamente correlacionadas. Esto podría ser útil para simplificar el modelo predictivo al eliminar variables redundantes.
+-   **Correlación entre Variables**: La matriz de correlación sugiere que ciertas variables como la edad y los días de empleo están altamente correlacionadas.
+    Esto podría ser útil para simplificar el modelo predictivo al eliminar variables redundantes.
 
-- **Relación entre Ingresos Totales y Monto del Crédito por TARGET**: Existe una dispersión considerable en ambos grupos TARGET, lo que indica que no hay una relación clara entre estos montos y las dificultades de pago.
+-   **Relación entre Ingresos Totales y Monto del Crédito por TARGET**: Existe una dispersión considerable en ambos grupos TARGET, lo que indica que no hay una relación clara entre estos montos y las dificultades de pago.
 
-- **Distribución de la Edad Comparando Con y Sin Dificultades de Pago**: Las densidades superpuestas sugieren que la edad podría no ser un diferenciador significativo entre aquellos que tienen y no tienen dificultades de pago, ya que las formas de las distribuciones son bastante similares.
-
+-   **Distribución de la Edad Comparando Con y Sin Dificultades de Pago**: Las densidades superpuestas sugieren que la edad podría no ser un diferenciador significativo entre aquellos que tienen y no tienen dificultades de pago, ya que las formas de las distribuciones son bastante similares.
 
 ### g. Posible transformación de variables de interés (e.g., log, estandarización, normalización)
 
-- **Logaritmo**: Reducir el impacto de los outliers y normalizar la distribución de `AMT_INCOME_TOTAL`, `AMT_CREDIT`, `AMT_ANNUITY`.
+-   **Logaritmo**: Reducir el impacto de los outliers y normalizar la distribución de `AMT_INCOME_TOTAL`, `AMT_CREDIT`, `AMT_ANNUITY`.
 
-- **Estandarización**: Permitir que cada característica contribuya equitativamente al modelo, útil para `DAYS_EMPLOYED`, `DAYS_BIRTH`.
+-   **Estandarización**: Permitir que cada característica contribuya equitativamente al modelo, útil para `DAYS_EMPLOYED`, `DAYS_BIRTH`.
 
-- **Valor Absoluto**: Convertir a positivo las variables `DAYS_BIRTH` y `DAYS_EMPLOYED` para una interpretación directa.
+-   **Valor Absoluto**: Convertir a positivo las variables `DAYS_BIRTH` y `DAYS_EMPLOYED` para una interpretación directa.
 
-- **Reemplazo de Outliers**: Imputar outliers extremos con medianas para evitar distorsiones en el modelo. (Realizado antes de Analisis Exploratorio para mejor visualización y analisis)
+-   **Reemplazo de Outliers**: Imputar outliers extremos con medianas para evitar distorsiones en el modelo.
+    (Realizado antes de Analisis Exploratorio para mejor visualización y analisis)
 
-- **Variables Categóricas**: Convertir variables categóricas en dummy para su inclusión en el modelo.
+-   **Variables Categóricas**: Convertir variables categóricas en dummy para su inclusión en el modelo.
 
 ```{r message=FALSE, warning=FALSE}
 data_transformed <- bank_application %>%
@@ -451,32 +493,36 @@ data_transformed <- bank_application %>%
 ```
 
 ## Especificación Descrita
+
 **A partir de los resultados de EDA describir la especificación del modelo de clasificación a estimar. Brevemente, describir cómo es el posible impacto y/o relación de cada una de las variables control de interés sobre la principal variable de estudio.**
 
 Al diseñar un modelo de clasificación para predecir la capacidad de un solicitante de cumplir con sus obligaciones crediticias (`TARGET`), las siguientes variables se perfilan como relevantes según el EDA:
 
-- **Edad (DAYS_BIRTH)**: Al observar la edad de los solicitantes, podríamos esperar que los más jóvenes, aún sin establecer un historial crediticio sólido, puedan tener más probabilidades de incumplimiento. Por otro lado, los solicitantes mayores podrían ser más estables financieramente y tener menos probabilidades de incumplimiento.
+-   **Edad (DAYS_BIRTH)**: Al observar la edad de los solicitantes, podríamos esperar que los más jóvenes, aún sin establecer un historial crediticio sólido, puedan tener más probabilidades de incumplimiento.
+    Por otro lado, los solicitantes mayores podrían ser más estables financieramente y tener menos probabilidades de incumplimiento.
 
-- **Estabilidad laboral (DAYS_EMPLOYED)**: Un período más largo de empleo podría indicar estabilidad financiera y ser un indicador de menor riesgo, sugiriendo una menor probabilidad de incumplimiento en el pago de créditos.
+-   **Estabilidad laboral (DAYS_EMPLOYED)**: Un período más largo de empleo podría indicar estabilidad financiera y ser un indicador de menor riesgo, sugiriendo una menor probabilidad de incumplimiento en el pago de créditos.
 
-- **Ingresos Totales (AMT_INCOME_TOTAL)**: Los ingresos altos podrían estar asociados con una mayor capacidad para cumplir con las obligaciones de crédito, aunque esto debe evaluarse en relación con el monto del crédito otorgado.
+-   **Ingresos Totales (AMT_INCOME_TOTAL)**: Los ingresos altos podrían estar asociados con una mayor capacidad para cumplir con las obligaciones de crédito, aunque esto debe evaluarse en relación con el monto del crédito otorgado.
 
-- **Cantidad de Crédito (AMT_CREDIT)**: Montos más altos de crédito podrían estar asociados con un mayor riesgo, especialmente si los ingresos del solicitante no son proporcionalmente altos.
+-   **Cantidad de Crédito (AMT_CREDIT)**: Montos más altos de crédito podrían estar asociados con un mayor riesgo, especialmente si los ingresos del solicitante no son proporcionalmente altos.
 
-- **Cantidad de Hijos (CNT_CHILDREN)**: Los solicitantes con hijos podrían tener más gastos y, por lo tanto, podrían tener un riesgo ligeramente mayor de incumplimiento debido a la presión financiera adicional.
+-   **Cantidad de Hijos (CNT_CHILDREN)**: Los solicitantes con hijos podrían tener más gastos y, por lo tanto, podrían tener un riesgo ligeramente mayor de incumplimiento debido a la presión financiera adicional.
 
-- **Historial Crediticio (EXT_SOURCE, si está disponible)**: Los puntajes de crédito externos bajos pueden indicar un historial de pagos deficientes, aumentando la probabilidad de incumplimiento.
+-   **Historial Crediticio (EXT_SOURCE, si está disponible)**: Los puntajes de crédito externos bajos pueden indicar un historial de pagos deficientes, aumentando la probabilidad de incumplimiento.
 
-- **Tipo de Ingreso (NAME_INCOME_TYPE)**: Algunas categorías de ingresos, como los trabajadores por cuenta propia, podrían mostrar un comportamiento de riesgo diferente en comparación con los empleados con sueldos fijos debido a la variabilidad de sus ingresos.
+-   **Tipo de Ingreso (NAME_INCOME_TYPE)**: Algunas categorías de ingresos, como los trabajadores por cuenta propia, podrían mostrar un comportamiento de riesgo diferente en comparación con los empleados con sueldos fijos debido a la variabilidad de sus ingresos.
 
-
-El impacto de cada variable será evaluado a través de la significancia de sus coeficientes en el modelo y su contribución a la precisión de las predicciones. Además, si bien la correlación entre las variables y `TARGET` no mostro impactos directos durante el analisis de la matriz de correlación, dichos impactos pueden pasar inadvertidos debido a su naturaleza no lineal o interacciones con otras variables. Por lo tanto, se emplearán técnicas de modelización que puedan capturar efectos no lineales y de interacción, como árboles de decisión, modelos de ensamble o redes neuronales, que pueden revelar relaciones complejas y ofrecer una mejor interpretación del riesgo crediticio.
+El impacto de cada variable será evaluado a través de la significancia de sus coeficientes en el modelo y su contribución a la precisión de las predicciones.
+Además, si bien la correlación entre las variables y `TARGET` no mostro impactos directos durante el analisis de la matriz de correlación, dichos impactos pueden pasar inadvertidos debido a su naturaleza no lineal o interacciones con otras variables.
+Por lo tanto, se emplearán técnicas de modelización que puedan capturar efectos no lineales y de interacción, como árboles de decisión, modelos de ensamble o redes neuronales, que pueden revelar relaciones complejas y ofrecer una mejor interpretación del riesgo crediticio.
 
 ## Modelos de Clasificación
-Estimación de cada uno de los siguientes modelos de Supervised Machine Learning -
-Clasificación:
+
+Estimación de cada uno de los siguientes modelos de Supervised Machine Learning - Clasificación:
 
 ### Preparaciones Previas
+
 ```{r}
 # Primero, crearemos una partición para los datos de entrenamiento y prueba
 set.seed(123) 
@@ -506,21 +552,24 @@ summary(logit_model)
 
 #### Evaluación del Modelo
 
-- **Matriz de Confusión**
+-   **Matriz de Confusión**
+
 ```{r}
 # Creamos la matriz de confusión
 confusionMatrix <- confusionMatrix(factor(predicted_class), factor(test_set$TARGET))
 confusionMatrix
 ```
 
-- **Estadístico Kappa**
+-   **Estadístico Kappa**
+
 ```{r}
 # Calculamos el estadístico Kappa
 kappa_statistic <- kappa(confusionMatrix$table)
 kappa_statistic
 ```
 
-- **AUC**
+-   **AUC**
+
 ```{r}
 # Calculamos AUC
 roc_obj <- roc(response = test_set$TARGET, predictor = predictions)
@@ -528,7 +577,8 @@ auc_statistic <- auc(roc_obj)
 auc_statistic
 ```
 
-- **ROC Curve**
+-   **ROC Curve**
+
 ```{r}
 # Dibujamos la curva ROC
 plot(roc_obj)
@@ -555,21 +605,24 @@ rpart.plot(cart_model, type = 4, extra = 102)
 
 #### Evaluación del Modelo
 
-- **Matriz de Confusión**
+-   **Matriz de Confusión**
+
 ```{r}
 # Matriz de Confusión
 confusionMatrix <- confusionMatrix(factor(cart_predicted_class), factor(test_set$TARGET))
 print(confusionMatrix)
 ```
 
-- **Estadístico Kappa**
+-   **Estadístico Kappa**
+
 ```{r}
 # Estadístico Kappa
 kappa_value <- kappa_stats[[1]]
 cat("Kappa Statistic:", kappa_value, "\n")
 ```
 
-- **AUC**
+-   **AUC**
+
 ```{r message=FALSE, warning=FALSE}
 # AUC
 roc_response <- roc(response = test_set$TARGET, predictor = as.numeric(tree_predicted_probs))
@@ -577,13 +630,15 @@ auc_value <- auc(roc_response)
 cat("AUC:", auc_value, "\n")
 ```
 
-- **ROC Curve**
+-   **ROC Curve**
+
 ```{r}
 # ROC Curve
 plot(roc_response, main = "ROC Curve for Decision Tree Model")
 ```
 
-###c. Support Vector Machine (SVM)
+###c.
+Support Vector Machine (SVM)
 
 ```{r}
 # Ajustar el modelo SVM
@@ -600,21 +655,24 @@ svm_predictions <- predict(svm_model, test_set)
 
 #### Evaluación del Modelo
 
-- **Matriz de Confusión**
+-   **Matriz de Confusión**
+
 ```{r}
 # Matriz de Confusión
 confusionMatrix <- table(Predicted = svm_predictions, Actual = test_set$TARGET)
 print(confusionMatrix)
 ```
 
-- **Estadístico Kappa**
+-   **Estadístico Kappa**
+
 ```{r}
 # Estadístico Kappa
 kappa_stat <- kappa2(confusionMatrix)[2]
 cat("Kappa Statistic:", kappa_stat, "\n")
 ```
 
-- **AUC**
+-   **AUC**
+
 ```{r}
 # AUC y ROC Curve
 library(pROC)
@@ -629,137 +687,220 @@ auc_value <- auc(roc_response)
 cat("AUC:", auc_value, "\n")
 ```
 
-- **ROC Curve**
+-   **ROC Curve**
+
 ```{r}
 # ROC Curve
 plot(roc_response, main = "ROC Curve for SVM Model")
 ```
 
-### d. K – Means Clustering
+### d. K -- Means Clustering
 
-**Analisis de Clusters**
-```{r}
+```{r message=FALSE, warning=FALSE}
+# Copiando los DataFrames para mantener los originales intactos
+training_set_copy <- training_set
+test_set_copy <- test_set
+
+# Transformando variables categóricas en numéricas en las copias
+for (var in c("CODE_GENDER", "FLAG_OWN_CAR", "FLAG_OWN_REALTY")) {
+  training_set_copy[[var]] <- as.numeric(as.factor(training_set_copy[[var]]))
+  test_set_copy[[var]] <- as.numeric(as.factor(test_set_copy[[var]]))
+}
+
+# Seleccionando variables para el clustering en la copia del conjunto de entrenamiento
+variables_clustering <- c("CODE_GENDER", "FLAG_OWN_CAR", "FLAG_OWN_REALTY", "CNT_CHILDREN",
+                          "AMT_INCOME_TOTAL", "AMT_CREDIT", "AMT_ANNUITY", "AMT_GOODS_PRICE",
+                          "DAYS_BIRTH", "DAYS_EMPLOYED", "EXT_SOURCE_2", "EXT_SOURCE_3")
+
+datos_clustering <- training_set_copy[, variables_clustering]
+
+# Escalando los datos para el clustering
+datos_clustering_scaled <- scale(datos_clustering)
+
+# Aplicando PCA antes del clustering
+pca_res <- prcomp(datos_clustering_scaled, center = TRUE, scale. = TRUE)
+datos_clustering_pca <- predict(pca_res, datos_clustering_scaled)
+
+# Calculando la suma de cuadrados dentro de los clusters para diferentes valores de k
 set.seed(123) # Para reproducibilidad
-# Ajustamos K-Means sin la variable objetivo
-kmeans_result <- kmeans(scale(training_set[, -which(names(training_set) == "TARGET")]), centers = 2, nstart = 25)
+ssw <- sapply(2:10, function(k) {
+  kmeans(datos_clustering_pca, centers = k, nstart = 25)$tot.withinss
+})
 
-# Añadir la asignación de cluster al conjunto de datos de entrenamiento
-training_set$cluster <- kmeans_result$cluster
+# Creando un vector de valores k (no incluimos k = 1 ya que no es útil para el método del codo)
+k_values <- 2:10
 
-# Evaluar la calidad de los clusters
-# Silhouette score
-silhouette_score <- silhouette(kmeans_result$cluster, dist(scale(training_set[, -which(names(training_set) == "TARGET")])))
-plot(silhouette_score, col = 1:2, border = NA)
-
-# Coeficiente de silhouette promedio
-avg_sil_width <- mean(silhouette_score[, 'sil_width'])
-cat("Average Silhouette Width:", avg_sil_width, "\n")
-
-# Visualizar los clusters
-fviz_cluster(kmeans_result, data = scale(training_set[, -which(names(training_set) == "TARGET")]))
-
-# Cruzar los clusters con la variable TARGET
-table(training_set$TARGET, training_set$cluster)
-
-# Puedes intentar analizar las estadísticas descriptivas de cada cluster
-aggregate(. ~ cluster, data = training_set, FUN = mean)
+# Graficando el método del codo
+plot(k_values, ssw, type = "b", pch = 19, frame = FALSE, 
+     xlab = "Número de clusters K", 
+     ylab = "Suma de cuadrados dentro del cluster")
+title(main = "Método de Suma de Cuadrados Dentro de los Clusters")
 ```
 
-**Creación de Modelo**
-```{r}
-# Asumiendo que sabemos que hay dos clusters (por ejemplo, TARGET es binario)
-set.seed(123) # Para reproducibilidad
-kmeans_model <- kmeans(training_set[, -which(names(training_set) == "TARGET")], centers = 2)
+```{r message=FALSE, warning=FALSE}
+# Configurar la semilla para reproducibilidad
+set.seed(123)
 
-# Asignar los clusters a las etiquetas de clase más cercanas
-# Esto supone que ya se ha realizado algún tipo de análisis para entender cómo se corresponden los clusters con las etiquetas de clase TARGET
-cluster_labels <- as.factor(ifelse(kmeans_model$cluster == 1, 0, 1)) # Sustituir con la lógica de asignación adecuada
+# Ejecutar K-Means para agrupar los datos en 3 clusters
+kmeans_result_3 <- kmeans(datos_clustering_scaled, centers = 3, nstart = 25)
 
-# Añadir las etiquetas de cluster al conjunto de datos de entrenamiento para la evaluación
-training_set$cluster_labels <- cluster_labels
+# Realizar PCA en los datos escalados
+pca_result <- prcomp(datos_clustering_scaled)
+
+# Crear un data frame con los resultados de los clusters y los componentes principales para la visualización
+pca_data <- data.frame(PC1 = pca_result$x[, 1], PC2 = pca_result$x[, 2], cluster = as.factor(kmeans_result_3$cluster))
+
+# Usar ggplot2 para crear el gráfico de los clusters utilizando los componentes principales
+ggplot(pca_data, aes(x = PC1, y = PC2, fill = cluster)) +
+  stat_density_2d(geom = "polygon", aes_string(x = "PC1", y = "PC2", fill = "cluster"), 
+                  size = 0.01, bins = 10, contour = TRUE, alpha = 0.3) +  # Ajustamos la transparencia con alpha
+  scale_fill_manual(values = c("#E79C95", "#7EC8C8", "#C7B446")) +
+  theme_minimal() +
+  labs(fill="Cluster") +
+  ggtitle("Visualización de Zonas de Clusters K-Means con 3 Grupos") +
+  theme(legend.position = "right", plot.title = element_text(hjust = 0.5))
 ```
+
+
+### e. KNN
+
+```{r}
+# Asegurarse de que test_set_copy tiene la misma estructura que datos_clustering_scaled
+test_set_copy_scaled <- scale(test_set_copy[, variables_clustering])
+
+# Definir la variable objetivo para el conjunto de entrenamiento y prueba
+training_labels <- training_set_copy$TARGET
+test_labels <- test_set_copy$TARGET
+
+# Asegurarnos de tener conjuntos de datos normalizados para el modelo KNN
+# Normalizamos también el conjunto de prueba usando la media y la desviación estándar del conjunto de entrenamiento
+test_set_copy_scaled <- as.data.frame(scale(test_set_copy[, variables_clustering], center = attr(datos_clustering_scaled, "scaled:center"), scale = attr(datos_clustering_scaled, "scaled:scale")))
+
+# Entrenar el modelo KNN
+set.seed(123)
+k <- 5 # Elegir un valor para k, el número de vecinos
+knn_pred <- knn(train = datos_clustering_scaled, test = test_set_copy_scaled, cl = training_labels, k = k)
+```
+
 
 #### Evaluación del Modelo
 
-- **Matriz de Confusión**
+-   **Matriz de Confusión**
 ```{r}
 # Matriz de Confusión
-confusionMatrix <- table(Predicted = training_set$cluster_labels, Actual = training_set$TARGET)
+confusionMatrix <- confusionMatrix(as.factor(knn_pred), as.factor(test_labels))
 print(confusionMatrix)
 ```
 
-- **Estadístico Kappa**
+
+-   **Estadístico Kappa**
 ```{r}
 # Estadístico Kappa
-kappa_stat <- kappa2(confusionMatrix)[2]
-cat("Kappa Statistic:", kappa_stat, "\n")
+kappa_stat <- kappa(confusionMatrix$table)
+
+# Extraer el valor del Estadístico Kappa desde el componente correcto
+kappa_value <- kappa_stat$coef
+
+# Asegurarse de convertir a numérico, aunque esto puede ser redundante si ya es numérico
+kappa_value_numeric <- as.numeric(kappa_value)
+
+# Imprimir el Estadístico Kappa
+cat("Estadístico Kappa:", kappa_value_numeric, "\n")
 ```
 
-- **AUC**
-```{r}
-# Calculamos la distancia al centroide para usar como proxy de probabilidad
-distances_to_centroid <- sqrt(rowSums((training_set[, -which(names(training_set) == "TARGET")] - kmeans_model$centers[kmeans_model$cluster,])^2))
-normalized_distances <- (distances_to_centroid - min(distances_to_centroid)) / (max(distances_to_centroid) - min(distances_to_centroid))
-proxy_probabilities <- 1 - normalized_distances
 
-# AUC utilizando la distancia al centroide como probabilidad
-roc_response <- roc(response = training_set$TARGET, predictor = proxy_probabilities)
+-   **AUC**
+```{r message=FALSE, warning=FALSE}
+# AUC y Curva ROC
+roc_response <- roc(response = as.numeric(as.character(test_labels)), predictor = as.numeric(as.character(knn_pred)))
 auc_value <- auc(roc_response)
 cat("AUC:", auc_value, "\n")
 ```
 
-- **ROC Curve**
+-   **ROC Curve**
 ```{r}
-# ROC Curve
-plot(roc_response, main = "ROC Curve using K-Means Clustering Proxy Probabilities")
+# Dibujamos la curva ROC
+plot(roc_response, main = "Curva ROC para el Modelo KNN")
 ```
 
-### e. KNN
-
-#### Evaluación del Modelo
-
-- **Matriz de Confusión**
-
-- **Estadístico Kappa**
-
-- **AUC**
-
-- **ROC Curve**
-
 ### f. Naïve Bayes
+```{r}
+# Entrenar el modelo Naïve Bayes
+modelo_nb <- naiveBayes(training_set_copy[, variables_clustering], training_labels)
+
+# Predecir sobre el conjunto de prueba
+predicciones_nb <- predict(modelo_nb, newdata = test_set_copy_scaled, type = "class")
+```
 
 #### Evaluación del Modelo
 
-- **Matriz de Confusión**
+-   **Matriz de Confusión**
+```{r}
+# Matriz de Confusión
+conf_mat_nb <- confusionMatrix(as.factor(predicciones_nb), as.factor(test_labels))
+print(conf_mat_nb)
+```
 
-- **Estadístico Kappa**
+-   **Estadístico Kappa**
+```{r}
+# Estadístico Kappa
+kappa_stat <- kappa(conf_mat_nb$table)
 
-- **AUC**
+# Extraer el valor del Estadístico Kappa desde el componente correcto
+kappa_value <- kappa_stat$coef
 
-- **ROC Curve**
+# Asegurarse de convertir a numérico, aunque esto puede ser redundante si ya es numérico
+kappa_value_numeric <- as.numeric(kappa_value)
+
+# Imprimir el Estadístico Kappa
+cat("Estadístico Kappa:", kappa_value_numeric, "\n")
+```
+
+-   **AUC**
+```{r}
+table(test_labels_factor)  
+```
+
+```{r}
+# AUC
+predicciones_nb_prob <- predict(modelo_nb, newdata = test_set_copy_scaled, type = "raw")
+roc_nb <- roc(response = test_labels, predictor = predicciones_nb_prob[,2], levels = rev(levels(test_labels)))
+auc_nb <- auc(roc_nb)
+cat("AUC:", auc_nb, "\n")
+```
+
+-   **ROC Curve**
+```{r}
+# Curva ROC
+plot(roc_nb, main="Curva ROC para Naïve Bayes")
+```
+
 
 ### g. Random Forest
 
 #### Evaluación del Modelo
 
-- **Matriz de Confusión**
+-   **Matriz de Confusión**
 
-- **Estadístico Kappa**
+-   **Estadístico Kappa**
 
-- **AUC**
+-   **AUC**
 
-- **ROC Curve**
+-   **ROC Curve**
 
 ## Evaluación y Selección de Modelo de Clasificación
-a. Matriz de Confusión
-b. Estadístico Kappa
-c. AUC
-d. ROC Curve
+
+a.  Matriz de Confusión
+b.  Estadístico Kappa
+c.  AUC
+d.  ROC Curve
 
 ## Conclusiones y Analisis
-Desarrollar una breve descripción de los 6 – 10 principales hallazgos de:
+
+Desarrollar una breve descripción de los 6 -- 10 principales hallazgos de:
 
 ### a. EDA
 
 ### b. Modelo Seleccionado
+
 Brevemente, interpretar los resultados estimados.
