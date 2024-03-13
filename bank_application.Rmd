@@ -565,22 +565,22 @@ print(confusionMatrix)
 - **Estadístico Kappa**
 ```{r}
 # Estadístico Kappa
-kappa_value <- kappa_stats[[1]]
-cat("Kappa Statistic:", kappa_value, "\n")
+kappa_statistic <- kappa(confusionMatrix$table)
+kappa_statistic
 ```
 
 - **AUC**
 ```{r message=FALSE, warning=FALSE}
 # AUC
-roc_response <- roc(response = test_set$TARGET, predictor = as.numeric(tree_predicted_probs))
-auc_value <- auc(roc_response)
-cat("AUC:", auc_value, "\n")
+roc_result <- roc(response = test_set$TARGET, predictor = cart_predictions[,2])
+auc_result <- auc(roc_result)
+print(auc_result)
 ```
 
 - **ROC Curve**
 ```{r}
 # ROC Curve
-plot(roc_response, main = "ROC Curve for Decision Tree Model")
+plot(roc_result, main="Curva ROC para el Modelo CART")
 ```
 
 ###c. Support Vector Machine (SVM)
